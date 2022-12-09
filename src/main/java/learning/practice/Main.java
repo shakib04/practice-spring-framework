@@ -13,6 +13,7 @@ public class Main {
     public static void main(String[] args) {
         ConfigurableApplicationContext context = SpringApplication.run(Main.class, args);
         MyController myController = (MyController) context.getBean("mycontroller");
+        System.out.println("------primary bean");
         String msg = myController.sayHello();
         System.out.println(msg);
 
