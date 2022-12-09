@@ -1,9 +1,6 @@
 package learning.practice;
 
-import learning.practice.controller.ConstractorInjectedController;
-import learning.practice.controller.MyController;
-import learning.practice.controller.PropertyInjectedController;
-import learning.practice.controller.SetterInjectedController;
+import learning.practice.controller.*;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -12,6 +9,10 @@ import org.springframework.context.ConfigurableApplicationContext;
 public class Main {
     public static void main(String[] args) {
         ConfigurableApplicationContext context = SpringApplication.run(Main.class, args);
+
+        I18NController i18NController = (I18NController) context.getBean("i18NController");
+        System.out.println(i18NController.sayHello());
+
         MyController myController = (MyController) context.getBean("mycontroller");
         System.out.println("------primary bean");
         String msg = myController.sayHello();
