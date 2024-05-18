@@ -2,28 +2,49 @@ package learning.practice.rest;
 
 import learning.practice.dao.StudentDao;
 import learning.practice.dao.TeacherDao;
+import learning.practice.dto.StudentCreateDto;
 import learning.practice.dto.StudentDto;
 import learning.practice.enums.Order;
+import learning.practice.model.Hobby;
+import learning.practice.model.Student;
 import learning.practice.pojo.Sort;
-import lombok.AllArgsConstructor;
+import learning.practice.repository.HobbyRepository;
+import learning.practice.repository.StudentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @RestController
-@AllArgsConstructor
+@RequiredArgsConstructor
 @ComponentScan(basePackages = "learning.practice.dao")
 @Log4j2
 public class StudentRestController {
 
-    private StudentDao studentDao;
+    private final StudentDao studentDao;
 
-    public TeacherDao teacherDao;
+    public final TeacherDao teacherDao;
+
+    private final StudentRepository studentRepository;
+
+    private final HobbyRepository hobbyRepository;
+
+    @Value("${this.app.name}")
+    private String className;
+
+    @PostMapping("/v1/students")
+    public ResponseEntity<?> create(@RequestBody StudentCreateDto studentCreateDto) {
+        Student student = studentCreateDto.mapToEntity(hobbyRepository);
+        return ResponseEntity.ok(studentRepository.save(student));
+    }
 
     @GetMapping("/v1/students")
     public ResponseEntity<List<StudentDto>> findAll(
@@ -31,6 +52,7 @@ public class StudentRestController {
             @RequestParam(required = false, defaultValue = "id") String orderBy,
             @RequestParam(required = false, defaultValue = "asc") Order order
     ) {
+        log.info(className);
         log.info(teacherDao);
         Sort sort = new Sort(orderBy, order);
         List<StudentDto> studentDtoList;
@@ -48,6 +70,20 @@ public class StudentRestController {
         StudentDto studentDto = studentDao.getById(id);
         HttpHeaders headers = new HttpHeaders();
         return ResponseEntity.ok().header("accept", "").body(studentDto);
+    }
+
+    @GetMapping("/v2/students/{id}")
+    public ResponseEntity<Optional<Student>> findByIdEntity(@PathVariable Integer id) {
+        Optional<Student> student = studentRepository.findById(id);
+        Optional<Student> student2 = student.map(student1 -> {
+            List<Hobby> hobbies = student1.getHobbies()
+                    .stream()
+                    .peek(hobby -> hobby.setStudent(null))
+                    .collect(Collectors.toList());
+            student1.setHobbies(hobbies);
+            return student1;
+        });
+        return ResponseEntity.ok(student2);
     }
 
     @PutMapping("/v1/students/{id}")

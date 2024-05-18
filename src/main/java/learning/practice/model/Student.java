@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Data
@@ -30,13 +31,6 @@ public class Student extends AbstractAuditableEntity {
     @Column(name = "last_name")
     private String lastName;
 
+    @OneToMany(mappedBy = "student", fetch = FetchType.LAZY)
+    private List<Hobby> hobbies;
 }
-
-//@Component
-//class MyCustomIdGenerator implements IdentifierGenerator {
-//
-//    @Override
-//    public Serializable generate(SharedSessionContractImplementor session, Object object) throws HibernateException {
-//        return new Date();
-//    }
-//}
